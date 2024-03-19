@@ -1,0 +1,121 @@
+SOLID Principles in PHP??
+The 5 basic principles for Object-Oriented Design, SOLID, were first created in an effort
+to improve maintainability in our code bases.
+SOLID is a mnemonic acronym that stands for each of the following principles:
+Single Responsibility,
+Open-Closed,
+Liskov Substitution,
+Interface Segregation,
+and Dependency Inversion.
+/************************/
+Single Responsibility Principle (SRP)?
+This principle states that each class should only have a single responsibility and only one reason to change within an application.
+
+Let’s look at an example of some code that does not really follow this principle.
+
+<?php
+
+class Notification
+{
+    private $message;
+
+    public function __construct($message)
+    {
+        $this->message = $message;
+    }
+
+    public function message()
+    {
+        return $this->message;
+    }
+
+    public function sendToEmail($email)
+    {
+        // Code Here
+    }
+
+    public function sendToSMS($mobileNumber)
+    {
+        // Code Here
+    }
+}
+
+The problem above, is that (not only) are you creating the Notification message here.
+You’re also expecting the same class to know how to send it to a Email, or SMS.
+We should separate this (business logic) from the (presentation data).
+
+Now we’ll see how we can update it to better follow the Single Responsibility Principle.
+
+<?php
+class Notification
+{
+    private $message;
+
+    public function __construct($message)
+    {
+        $this->message = $message;
+    }
+
+    public function message()
+    {
+        return $this->message;
+    }
+}
+/**********/
+interface Notifier
+{
+    public function send($to);
+}
+/*******************/
+class EmailNotifier implements Notifier
+{
+    private $notification;
+
+    public function __construct(Notification $notification)
+    {
+        $this->notification = $notification;
+    }
+
+    public function send($to)
+    {
+        // Email Logic Here
+    }
+}
+/****************/
+class SMSNotifier implements Notifier
+{
+    private $notification;
+
+    public function __construct(Notification $notification)
+    {
+        $this->notification = $notification;
+    }
+
+    public function send($to)
+    {
+        // SMS Logic Here
+    }
+}
+/**************************/
+Now that we’ve organized the above in this fashion,
+it is easy for us to create new Notifier’s without having to ever touch any of the existing classes.
+For instance, let’s assume we want to create a notifier capable of sending notifications to Slack.
+We could simply create a new class for this like so.
+
+<?php
+
+class SlackNotifier implements Notifier
+{
+    private $notification;
+
+    public function __construct(Notification $notification)
+    {
+        $this->notification = $notification;
+    }
+
+    public function send($to)
+    {
+        // Slack Logic Here
+    }
+}
+/********************************/
